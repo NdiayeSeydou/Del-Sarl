@@ -4,7 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Facture</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
+<style>
+  * { box-sizing:border-box; }
+  .row { display:table; width:100%; table-layout:fixed; }
+  .col-5,.col-7 { display:table-cell; vertical-align:top; }
+  .col-5 { width:41.666%; } .col-7 { width:58.334%; }
+  .text-end { text-align:right; } .text-center { text-align:center; }
+  .table { width:100%; border-collapse:collapse; }
+  .table th,.table td { padding:8px; }
+  .table-responsive { width:100%; }
+  .d-block { display:block; } .fs-6 { font-size:.9rem; }
+  .mb-0 { margin-bottom:0; } .mb-2 { margin-bottom:8px; }
+  .mb-3 { margin-bottom:14px; } .mb-4 { margin-bottom:20px; }
+  .mt-2 { margin-top:8px; } .pe-2 { padding-right:8px; }
+</style>
 <style>
   :root { --bleu:#0b4f86; --bleu-clair:#1b78b8; }
   body { background:#e9ecef; }
@@ -44,32 +57,32 @@
       <div class="logo-sub">INTÉGRATEUR DE SOLUTIONS</div>
     </div>
     <div class="col-7 text-end entete-info">
-      <div class="societe" id="societe-nom"></div>
-      <div id="societe-adresse"></div>
-      <div id="societe-tel"></div>
-      <div id="societe-email"></div>
+      <div class="societe">DOUCOURÉ ÉQUIPEMENT ET LOGISTIQUE SARL</div>
+      <div>Hamdallaye ACI 2000 – Bamako, Mali</div>
+      <div>Tél. : +223 94 34 77 57 / +223 66 75 63 29</div>
+      <div>Email : delsarl15@gmail.com</div>
     </div>
   </div>
   <div class="double-line"></div>
 
   <h1 class="titre">FACTURE</h1>
-  <div class="numero" id="numero"></div>
+  <div class="numero">N° {{ $facture->num_facture }}</div>
 
   <!-- CLIENT / INFOS -->
   <div class="row mb-4">
     <div class="col-7">
       <div class="label">Client</div>
-      <div class="valeur mb-3" id="client"></div>
-      <div class="label">Référence commande</div>
-      <div class="valeur" id="commande"></div>
+      <div class="valeur mb-3">{{ $facture->client }}</div>
+      <div class="label">Statut de paiement</div>
+      <div class="valeur">{{ ucfirst(str_replace('_', ' ', $facture->statut_paiement)) }}</div>
     </div>
     <div class="col-5">
       <div class="label">Date</div>
-      <div class="valeur mb-2" id="date"></div>
+      <div class="valeur mb-2">Bamako, le {{ \Carbon\Carbon::parse($facture->date_facture)->format('d/m/Y') }}</div>
       <div class="label">Date d'échéance</div>
-      <div class="valeur mb-2" id="echeance"></div>
+      <div class="valeur mb-2">{{ $facture->date_echeance ? \Carbon\Carbon::parse($facture->date_echeance)->format('d/m/Y') : '—' }}</div>
       <div class="label">Devise</div>
-      <div class="valeur" id="devise"></div>
+      <div class="valeur">Franc CFA (XOF)</div>
     </div>
   </div>
 
@@ -85,28 +98,43 @@
           <th class="text-end" style="width:130px">Prix total HT</th>
         </tr>
       </thead>
-      <tbody id="lignes"></tbody>
+      <tbody>
+        @foreach($facture->articles as $article)
+          <tr>
+            <td>{{ $loop->iteration }}</td>
+            <td>{{ $article->designation }}</td>
+            <td class="text-center">{{ $article->quantite }}</td>
+            <td class="text-end">{{ number_format($article->prix_unitaire, 0, ',', ' ') }}</td>
+            <td class="text-end">{{ number_format($article->prix_total, 0, ',', ' ') }}</td>
+          </tr>
+        @endforeach
+      </tbody>
     </table>
   </div>
 
   <!-- TOTAUX -->
   <table class="totaux mt-2">
-    <tr class="ht"><td>TOTAL HT (FCFA)</td><td class="text-end" id="total-ht"></td></tr>
-    <tr class="tva"><td id="tva-label"></td><td class="text-end" id="total-tva"></td></tr>
-    <tr class="ttc"><td>TOTAL TTC (FCFA)</td><td class="text-end" id="total-ttc"></td></tr>
+    <tr class="ht"><td>TOTAL HT (FCFA)</td><td class="text-end">{{ number_format($facture->subtotal_ht, 0, ',', ' ') }}</td></tr>
+    @if($facture->appliquer_tva)
+      <tr class="tva"><td>TVA ({{ $facture->tva_pourcentage }} %)</td><td class="text-end">{{ number_format($facture->montant_tva, 0, ',', ' ') }}</td></tr>
+    @endif
+    @if($facture->appliquer_remise)
+      <tr class="tva"><td>Remise ({{ $facture->remise_pourcentage }} %)</td><td class="text-end">-{{ number_format($facture->montant_remise, 0, ',', ' ') }}</td></tr>
+    @endif
+    <tr class="ttc"><td>TOTAL TTC (FCFA)</td><td class="text-end">{{ number_format($facture->grand_total, 0, ',', ' ') }}</td></tr>
   </table>
 
   <p class="arrete">
     Arrêtée la présente facture à la somme de :<br>
-    <strong id="total-lettres"></strong>
+    <strong>{{ $facture->montant_lettres ?: number_format($facture->grand_total, 0, ',', ' ') . ' francs CFA' }}</strong>
   </p>
-  <p class="small mb-0"><strong>Mode de règlement :</strong> <span id="reglement"></span></p>
+  <p class="small mb-0"><strong>Conditions de règlement :</strong> {{ $facture->conditions ?: 'Selon accord avec le client.' }}</p>
 
   <div class="direction">LA DIRECTION</div>
-  <div class="pied" id="pied"></div>
+  <div class="pied"><strong>DEL SARL – Fournisseur & Intégrateur de Solutions Techniques</strong><br>RCCM : Ma.Bko.2015.B.703 | NIF : 084123008N | Hamdallaye ACI 2000, Bamako – Mali</div>
 </div>
 
-<script>
+{{-- <script>
 // ===== DONNÉES (à remplacer par celles de votre application) =====
 const facture = {
   societe: {
@@ -199,6 +227,6 @@ $("total-ttc").textContent = fmt(ttc);
 const lettres = enLettres(ttc);
 $("total-lettres").textContent =
   lettres.charAt(0).toUpperCase() + lettres.slice(1) + ` (${fmt(ttc)}) francs CFA toutes taxes comprises.`;
-</script>
+</script> --}}
 </body>
 </html>

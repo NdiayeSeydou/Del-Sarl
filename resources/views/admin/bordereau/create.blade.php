@@ -3,7 +3,8 @@
 @section('suite')
 
 <div class="container-fluid py-4">
-    <form action="#" method="POST" id="formCreateBL">
+    <form action="{{ route('bordereau.store') }}" method="POST" id="formCreateBL" data-swal-confirm data-swal-title="Enregistrer ce bordereau ?" data-swal-text="Le bordereau et ses articles seront enregistrés." data-swal-confirm-text="Enregistrer">
+        @csrf
         <!-- En-tête de la page -->
         <div class="d-flex align-items-center justify-content-between mb-4">
             <div>

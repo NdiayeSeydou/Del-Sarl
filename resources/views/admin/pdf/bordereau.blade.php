@@ -4,7 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bordereau de livraison</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
+<style>
+  * { box-sizing:border-box; }
+  .row { display:table; width:100%; table-layout:fixed; }
+  .col-5,.col-6,.col-7 { display:table-cell; vertical-align:top; }
+  .col-5 { width:41.666%; } .col-7 { width:58.334%; } .col-6 { width:50%; }
+  .text-end { text-align:right; } .text-center { text-align:center; }
+  .table { width:100%; border-collapse:collapse; }
+  .table th,.table td { padding:8px; }
+  .table-responsive { width:100%; }
+  .small { font-size:.8rem; } .mb-0 { margin-bottom:0; }
+  .mb-2 { margin-bottom:8px; } .mb-4 { margin-bottom:20px; }
+  .mt-3 { margin-top:14px; } .mt-4 { margin-top:20px; }
+</style>
 <style>
   :root { --bleu:#0b4f86; --bleu-clair:#1b78b8; }
   body { background:#e9ecef; }
@@ -41,10 +53,10 @@
       <div class="logo-sub">INTÉGRATEUR DE SOLUTIONS</div>
     </div>
     <div class="col-7 text-end entete-info">
-      <div class="societe" id="societe-nom"></div>
-      <div id="societe-adresse"></div>
-      <div id="societe-tel"></div>
-      <div id="societe-email"></div>
+      <div class="societe">DOUCOURÉ ÉQUIPEMENT ET LOGISTIQUE SARL</div>
+      <div>Hamdallaye ACI 2000 – Bamako, Mali</div>
+      <div>Tél. : +223 94 34 77 57 / +223 66 75 63 29</div>
+      <div>Email : delsarl15@gmail.com</div>
     </div>
   </div>
   <div class="double-line"></div>
@@ -55,17 +67,17 @@
   <div class="row mb-4">
     <div class="col-7">
       <div class="label">Client / Destinataire</div>
-      <div class="valeur" id="client"></div>
+      <div class="valeur">{{ $bordereau->client }}</div>
     </div>
     <div class="col-5">
       <div class="label">Date de livraison</div>
-      <div class="valeur mb-2" id="date"></div>
+      <div class="valeur mb-2">Bamako, le {{ \Carbon\Carbon::parse($bordereau->date_livraison)->format('d/m/Y') }}</div>
       <div class="label">N° BL</div>
-      <div class="pointilles valeur" id="numero"></div>
+      <div class="pointilles valeur">{{ $bordereau->num_bl }}</div>
     </div>
   </div>
 
-  <p class="mb-4"><span class="label" style="font-size:.8rem">Référence :</span> <span id="reference"></span></p>
+  <p class="mb-4"><span class="label" style="font-size:.8rem">Référence :</span> <span>{{ $bordereau->reference ?: '—' }}</span></p>
 
   <!-- TABLEAU -->
   <div class="table-responsive">
@@ -78,11 +90,20 @@
           <th style="width:170px">Observations</th>
         </tr>
       </thead>
-      <tbody id="lignes"></tbody>
+      <tbody>
+        @foreach($bordereau->articles as $article)
+          <tr>
+            <td>{{ $loop->iteration }}</td>
+            <td>{{ $article->designation }}</td>
+            <td class="text-center">{{ $article->quantite }}</td>
+            <td>{{ $article->observations }}</td>
+          </tr>
+        @endforeach
+      </tbody>
       <tfoot>
         <tr>
           <td colspan="2" class="text-center">TOTAL ARTICLES LIVRÉS</td>
-          <td class="text-center" id="total"></td>
+          <td class="text-center">{{ $bordereau->total_quantite }}</td>
           <td></td>
         </tr>
       </tfoot>
@@ -96,23 +117,23 @@
     <div class="col-6 bloc-signature">
       <div class="fw-bold" style="color:var(--bleu)">POUR DEL SARL</div>
       <div class="small mb-2">La Direction</div>
-      <div class="mb-2">Nom : <span class="ligne-saisie" id="del-nom"></span></div>
-      <div class="mb-2">Fonction : <span class="ligne-saisie" id="del-fonction"></span></div>
+      <div class="mb-2">Nom : <span class="ligne-saisie">{{ $bordereau->emetteur_nom }}</span></div>
+      <div class="mb-2">Fonction : <span class="ligne-saisie">{{ $bordereau->emetteur_fonction }}</span></div>
       <div>Signature et cachet :</div>
     </div>
     <div class="col-6 bloc-signature">
       <div class="fw-bold" style="color:var(--bleu)">POUR LE CLIENT</div>
       <div class="small mb-2">Réceptionnaire</div>
-      <div class="mb-2">Nom : <span class="ligne-saisie" id="client-nom"></span></div>
-      <div class="mb-2">Fonction : <span class="ligne-saisie" id="client-fonction"></span></div>
+      <div class="mb-2">Nom : <span class="ligne-saisie">{{ $bordereau->recepteur_nom }}</span></div>
+      <div class="mb-2">Fonction : <span class="ligne-saisie">{{ $bordereau->recepteur_fonction }}</span></div>
       <div>Signature et cachet :</div>
     </div>
   </div>
 
-  <div class="pied" id="pied"></div>
+  <div class="pied"><strong>DEL SARL – Fournisseur & Intégrateur de Solutions Techniques</strong><br>RCCM : Ma.Bko.2015.B.703 | NIF : 084123008N | Hamdallaye ACI 2000, Bamako – Mali</div>
 </div>
 
-<script>
+{{-- <script>
 // ===== DONNÉES (à remplacer par celles de votre application) =====
 const bl = {
   societe: {
@@ -158,6 +179,6 @@ $("lignes").innerHTML = bl.lignes.map((l, i) => `<tr>
   <td>${l.obs}</td>
 </tr>`).join("");
 $("total").textContent = bl.lignes.reduce((s, l) => s + l.qte, 0);
-</script>
+</script> --}}
 </body>
 </html>

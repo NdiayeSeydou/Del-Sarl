@@ -4,7 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Facture pro forma</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
+<style>
+  * { box-sizing:border-box; }
+  .row { display:table; width:100%; table-layout:fixed; }
+  .col-5,.col-7 { display:table-cell; vertical-align:top; }
+  .col-5 { width:41.666%; } .col-7 { width:58.334%; }
+  .text-end { text-align:right; } .text-center { text-align:center; }
+  .table { width:100%; border-collapse:collapse; }
+  .table th,.table td { padding:8px; }
+  .table-responsive { width:100%; }
+  .d-block { display:block; } .fs-6 { font-size:.9rem; }
+  .mb-0 { margin-bottom:0; } .mb-3 { margin-bottom:14px; }
+  .mb-4 { margin-bottom:20px; } .mt-2 { margin-top:8px; }
+  .pe-2 { padding-right:8px; }
+</style>
 <style>
   body { background:#e9ecef; }
   .facture { background:#fff; max-width:850px; margin:20px auto; padding:40px 45px; box-shadow:0 0 12px rgba(0,0,0,.15); font-family:Arial, Helvetica, sans-serif; color:#222; }
@@ -38,27 +51,28 @@
       <div class="logo-sub">INTÉGRATEUR DE SOLUTIONS</div>
     </div>
     <div class="col-7 text-end entete-info">
-      <div class="societe" id="societe-nom"></div>
-      <div id="societe-adresse"></div>
-      <div id="societe-tel"></div>
-      <div id="societe-email"></div>
+      <div class="societe">DOUCOURÉ ÉQUIPEMENT ET LOGISTIQUE SARL</div>
+      <div>Hamdallaye ACI 2000 – Bamako, Mali</div>
+      <div>Tél. : +223 94 34 77 57 / +223 66 75 63 29</div>
+      <div>Email : delsarl15@gmail.com</div>
     </div>
   </div>
   <div class="double-line"></div>
 
   <h1 class="titre">FACTURE PRO FORMA</h1>
+  <div class="text-center fw-bold mb-4">N° {{ $proforma->num_proforma }}</div>
 
   <!-- CLIENT / DATE -->
   <div class="row mb-4">
     <div class="col-7">
       <div class="label">Client</div>
-      <div class="valeur" id="client"></div>
+      <div class="valeur">{{ $proforma->client }}</div>
     </div>
     <div class="col-5">
       <div class="label">Date</div>
-      <div class="valeur mb-3" id="date"></div>
+      <div class="valeur mb-3">Bamako, le {{ \Carbon\Carbon::parse($proforma->date_proforma)->format('d/m/Y') }}</div>
       <div class="label">Devise</div>
-      <div class="valeur" id="devise"></div>
+      <div class="valeur">{{ $proforma->devise }}</div>
     </div>
   </div>
 
@@ -74,25 +88,44 @@
           <th class="text-end" style="width:130px">Prix total</th>
         </tr>
       </thead>
-      <tbody id="lignes"></tbody>
+      <tbody>
+        @foreach($proforma->articles as $article)
+          <tr>
+            <td>{{ $loop->iteration }}</td>
+            <td>{{ $article->designation }}</td>
+            <td class="text-center">{{ $article->quantite }}</td>
+            <td class="text-end">{{ number_format($article->prix_unitaire, 0, ',', ' ') }}</td>
+            <td class="text-end">{{ number_format($article->prix_total, 0, ',', ' ') }}</td>
+          </tr>
+        @endforeach
+      </tbody>
       <tfoot>
         <tr>
-          <td colspan="4" class="text-end">TOTAL HT (FCFA)</td>
-          <td class="text-end" id="total"></td>
+          <td colspan="4" class="text-end">TOTAL HT ({{ $proforma->devise }})</td>
+          <td class="text-end">{{ number_format($proforma->subtotal_ht, 0, ',', ' ') }}</td>
         </tr>
+        @if($proforma->appliquer_remise)
+          <tr><td colspan="4" class="text-end">Remise ({{ $proforma->remise_pourcentage }} %)</td><td class="text-end">-{{ number_format($proforma->montant_remise, 0, ',', ' ') }}</td></tr>
+        @endif
+        @if($proforma->appliquer_tva)
+          <tr><td colspan="4" class="text-end">TVA ({{ $proforma->tva_pourcentage }} %)</td><td class="text-end">{{ number_format($proforma->montant_tva, 0, ',', ' ') }}</td></tr>
+        @endif
+        <tr><td colspan="4" class="text-end">TOTAL TTC</td><td class="text-end">{{ number_format($proforma->grand_total, 0, ',', ' ') }}</td></tr>
       </tfoot>
     </table>
   </div>
 
   <p class="arrete">
     Arrêtée la présente facture pro forma à la somme de :<br>
-    <strong id="total-lettres"></strong>
+    <strong>{{ $proforma->montant_lettres ?: number_format($proforma->grand_total, 0, ',', ' ') . ' ' . $proforma->devise }}</strong>
   </p>
+
+  <p class="small">{{ $proforma->remarques }}</p>
 
   <div class="direction">LA DIRECTION</div>
 </div>
 
-<script>
+{{-- <script>
 // ===== DONNÉES (à remplacer par celles de votre application) =====
 const facture = {
   societe: {
@@ -139,6 +172,6 @@ $("lignes").innerHTML = facture.lignes.map((l, i) => {
 }).join("");
 $("total").textContent = fmt(total);
 $("total-lettres").textContent = facture.totalLettres;
-</script>
+</script> --}}
 </body>
 </html>

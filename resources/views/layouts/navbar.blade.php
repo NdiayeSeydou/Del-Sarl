@@ -253,7 +253,7 @@
 
                 <!-- Bouton Déconnexion Séparé -->
                 <li class="nav-item">
-                    <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                    <form method="POST" action="{{ route('logout') }}" class="d-inline" data-swal-confirm data-swal-icon="warning" data-swal-title="Se déconnecter ?" data-swal-text="Votre session va être fermée." data-swal-confirm-text="Se déconnecter">
                         @csrf
                         <button type="submit"
                             class="nav-link border-0 bg-transparent text-danger d-flex align-items-center gap-2 w-100">
@@ -766,7 +766,7 @@
                                         <img src="assets/images/avatar/avatar-1.jpg" alt=""
                                             class="avatar avatar-md rounded-circle" />
                                         <div>
-                                            <h4 class="mb-0 fs-5">Jitu Chauhan</h4>
+                                            <h4 class="mb-0 fs-5">{{ auth()->user()->name }}</h4>
                                         </div>
                                     </div>
 
@@ -843,7 +843,9 @@
                                     </div> --}}
 
                                     <div class="border-dashed border-top mb-4 pt-4 px-6">
-                                        <a href="#!" class="text-secondary d-flex align-items-center gap-2">
+                                        <form method="POST" action="{{ route('logout') }}" data-swal-confirm data-swal-icon="warning" data-swal-title="Se déconnecter ?" data-swal-text="Votre session va être fermée." data-swal-confirm-text="Se déconnecter">
+                                            @csrf
+                                            <button type="submit" class="btn btn-link p-0 text-secondary d-flex align-items-center gap-2 text-decoration-none">
                                             <span>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                                                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -856,7 +858,8 @@
                                                     <path d="M13 15l3 -3" />
                                                 </svg>
                                             </span>
-                                            <span>Se déconnecter</span></a>
+                                            <span>Se déconnecter</span></button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
@@ -1715,7 +1718,7 @@
     <script src="{{ asset('dasher/assets/libs/swiper/swiper-bundle.min.js') }}"></script>
     <script src="{{ asset('dasher/assets/js/vendors/swiper.js') }}"></script>
 
-
+    @include('layouts.flash-messages')
 
 </body>
 

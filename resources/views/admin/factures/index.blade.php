@@ -3,223 +3,278 @@
 @section('suite')
 
 
-   
-      <div class="custom-container">
+
+    <div class="custom-container">
 
 
+        <div class="container py-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 mb-0">Liste des factures</h1>
+                <a href="{{ route('facture.create') }}" class="btn btn-dark">+ Ajouter une facture</a>
+            </div>
 
+            <!-- Formulaire de filtre -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <form method="GET" action="{{ route('facture.index') }}" class="row g-3 align-items-end">
 
-
-
-
-        <div class="mb-4 d-flex justify-content-between align-items-center">
-            <h1 class="h2">Liste des factures</h1>
-            <a href="{{ route('facture.create') }}" class="btn btn-dark">+ Ajouter une facture</a>
-        </div>
-
-
-
-
-
-        <div class="card mb-5 shadow-sm">
-            <div class="card-body">
-                <form action="" method="GET">
-                    <div class="row g-3 align-items-end">
-
-                        <div class="col-lg-3 col-md-6">
-                            <label class="form-label fw-semibold">Date de facturation</label>
-                            <input type="date" name="date" class="form-control" value="">
+                        {{-- Filtrer par date --}}
+                        <div class="col-md-4">
+                            <label class="form-label">Date de facturation</label>
+                            <input type="date" name="date" class="form-control" value="{{ request('date') }}">
                         </div>
 
-                        <div class="col-lg-4 col-md-6">
-                            <label class="form-label fw-semibold">Code</label>
-                            <div class="input-group">
-                                <input type="text" name="search" class="form-control"
-                                    placeholder="code facture..." value="">
-                                <button class="btn btn-light border" type="submit">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
-                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round">
-                                        <circle cx="11" cy="11" r="8" />
-                                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                                    </svg>
-                                </button>
-                            </div>
+                        {{-- Recherche par numéro ou client --}}
+                        <div class="col-md-5">
+                            <label class="form-label">Recherche</label>
+                            <input type="text" name="search" class="form-control" value="{{ request('search') }}"
+                                placeholder="Numéro de facture ou nom du client">
                         </div>
 
-                        <div class="col-lg-5 col-md-12 d-flex gap-2">
+                        {{-- Boutons --}}
+                        <div class="col-md-3 d-flex gap-2">
                             <button type="submit" class="btn btn-primary w-100">
-                                Filtrer les factures
+                                <i class="ti ti-filter me-1"></i>
+                                Filtrer
                             </button>
 
-                            <a href="" class="btn btn-outline-danger w-100">
+                            <a href="{{ route('facture.index') }}" class="btn btn-outline-secondary w-100">
                                 Réinitialiser
                             </a>
                         </div>
 
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
-        </div>
 
-        {{-- <div class="d-flex justify-content-center gap-3 mb-4">
-            <button id="btnBoutique" class="btn btn-dark px-4 shadow-none">Boutique</button>
-            <button id="btnMagasin" class="btn btn-outline-dark px-4 shadow-none">Magasin</button>
-        </div> --}}
-
-
-
-<div class="accordion" id="accordionFactures">
-    <!-- Groupe par Jour -->
-    <div class="accordion-item mb-3 border shadow-sm">
-        <h2 class="accordion-header" id="headingOne">
-            <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                <i class="bi bi-calendar-event me-2 text-primary"></i>
-                Factures du 02 Octobre 2026
-                <span class="badge bg-primary ms-2">2 factures</span>
-            </button>
-        </h2>
-        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionFactures">
-            <div class="accordion-body p-0">
+            @if ($factures->isEmpty())
+                <div class="alert alert-light border text-center">Aucune facture enregistrée.</div>
+            @else
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
+                    <table class="table table-striped table-hover align-middle">
                         <thead class="table-light">
                             <tr>
                                 <th>#</th>
-                                <th>Date</th>
+                                <th>Réference</th>
                                 <th>Client</th>
-                                <th>Montant total</th>
-                                <th>Émise par</th>
+                                <th>Date</th>
+                                <th>Montant</th>
+                                <th>Statut</th>
                                 <th class="text-end">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>1</td>
-                                <td>02/10/2026 10:30</td>
-                                <td><span class="fw-semibold text-dark">Client Nom</span></td>
-                                <td class="fw-bold text-primary">150 000 FCFA</td>
-                                <td><span class="badge bg-light text-dark border">Agent ABC</span></td>
-                                <td class="text-end">
-                                    <!-- Télécharger -->
-                                    <a href="#" class="btn btn-ghost btn-icon btn-sm rounded-circle text-primary" title="Télécharger">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
-                                            <path d="M7 11l5 5l5 -5" />
-                                            <path d="M12 4l0 12" />
-                                        </svg>
-                                    </a>
-                                    <!-- Voir -->
-                                    <a href="{{ route('facture.show') }}" class="btn btn-ghost btn-icon btn-sm rounded-circle" title="Voir">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
-                                            <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
-                                        </svg>
-                                    </a>
-                                    <!-- Modifier -->
-                                    <a href="#" class="btn btn-ghost btn-icon btn-sm rounded-circle" title="Modifier">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
-                                            <path d="M13.5 6.5l4 4" />
-                                        </svg>
-                                    </a>
-                                    <!-- Supprimer -->
-                                    <form action="#" method="POST" style="display: inline;">
-                                        <button type="button" class="btn btn-ghost btn-icon btn-sm rounded-circle text-danger" title="Supprimer">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                <path d="M4 7l16 0" />
-                                                <path d="M10 11l0 6" />
-                                                <path d="M14 11l0 6" />
-                                                <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
-                                                <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
-                                            </svg>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
+                            @forelse ($factures as $facture)
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+
+                                    <td>{{ $facture->num_facture }}</td>
+
+                                    <td>
+                                        <span title="{{ $facture->client }}">
+                                            {{ \Illuminate\Support\Str::limit($facture->client, 14, '...') }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        {{ \Carbon\Carbon::parse($facture->date_facture)->format('d/m/Y') }}
+                                    </td>
+
+                                    <td>
+                                        {{ number_format($facture->grand_total, 0, ',', ' ') }} F
+                                    </td>
+
+                                    <td>
+                                        @php
+                                            $statut = strtolower(trim($facture->statut_paiement ?? 'unpaid'));
+
+                                            [$label, $badgeClass] = match ($statut) {
+                                                // Cas : Payé totalement
+                                                'paid', 'paye', 'payee', 'payée' => ['Payé', 'bg-success'],
+                                                // Cas : Partiellement payé (Affichage court : Partiel)
+                                                'partial',
+                                                'partially_paid',
+                                                'partially-paid',
+                                                'partiel',
+                                                'partiellement_paye',
+                                                'partiellement payé',
+                                                'partiellement payee'
+                                                    => ['Partiel', 'bg-warning text-dark'],
+                                                // Cas : Non payé / En attente
+                                                'unpaid',
+                                                'non_paye',
+                                                'non paye',
+                                                'non payée',
+                                                'non_payee',
+                                                'pending',
+                                                'en_attente'
+                                                    => ['Non payé', 'bg-danger'],
+                                                // Cas : Annulé
+                                                'cancelled', 'canceled', 'annule', 'annulee', 'annulée' => [
+                                                    'Annulé',
+                                                    'bg-dark',
+                                                ],
+                                                // Par défaut
+                                                default => [
+                                                    ucfirst(str_replace(['_', '-'], ' ', $statut)),
+                                                    'bg-secondary',
+                                                ],
+                                            };
+                                        @endphp
+
+                                        <span class="badge {{ $badgeClass }}">
+                                            {{ $label }}
+                                        </span>
+                                    </td>
+
+                                    <td class="text-end">
+                                        <div class="invoice-actions">
+
+                                            {{-- VOIR --}}
+                                            <a href="{{ route('facture.show', $facture) }}"
+                                                class="btn btn-ghost btn-icon btn-sm rounded-circle" title="Voir">
+
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                    fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                    <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                                                    <path
+                                                        d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
+                                                </svg>
+                                            </a>
+
+                                            {{-- PDF --}}
+                                            <a href="{{ route('facture.pdf', $facture) }}"
+                                                class="btn btn-ghost btn-icon btn-sm rounded-circle"
+                                                title="Télécharger PDF">
+
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                    fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                    <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                                                    <path d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4" />
+                                                    <path d="M5 18h1.5a1.5 1.5 0 0 0 0 -3H5v6" />
+                                                    <path d="M17 18h2" />
+                                                    <path d="M20 15h-3v6" />
+                                                    <path d="M11 15v6h1a2 2 0 0 0 2 -2v-2a2 2 0 0 0 -2 -2h-1z" />
+                                                </svg>
+                                            </a>
+
+                                            {{-- MODIFIER --}}
+                                            <a href="{{ route('facture.edit', $facture) }}"
+                                                class="btn btn-ghost btn-icon btn-sm rounded-circle" title="Modifier"
+                                                data-swal-confirm data-swal-title="Modifier cette facture ?"
+                                                data-swal-text="Le formulaire de modification va s'ouvrir."
+                                                data-swal-confirm-text="Continuer">
+
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                    fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                    <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+                                                    <path d="M13.5 6.5l4 4" />
+                                                </svg>
+                                            </a>
+
+                                            {{-- SUPPRIMER --}}
+                                            <form action="{{ route('facture.destroy', $facture) }}" method="POST"
+                                                style="display: inline;" data-swal-confirm data-swal-icon="warning"
+                                                data-swal-title="Supprimer cette facture ?"
+                                                data-swal-text="Cette action est irréversible."
+                                                data-swal-confirm-text="Supprimer">
+
+                                                @csrf
+                                                @method('DELETE')
+
+                                                <button type="submit"
+                                                    class="btn btn-ghost btn-icon btn-sm rounded-circle text-danger"
+                                                    title="Supprimer">
+
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                        fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                        <path d="M4 7l16 0" />
+                                                        <path d="M10 11l0 6" />
+                                                        <path d="M14 11l0 6" />
+                                                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+                                                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+                                                    </svg>
+                                                </button>
+                                            </form>
+
+                                        </div>
+                                    </td>
+
+                                </tr>
+
+                            @empty
+
+                                <tr>
+                                    <td colspan="7" class="text-center py-5">
+                                        <div class="d-flex flex-column align-items-center">
+
+                                            <i class="ti ti-file-search text-muted mb-2" style="font-size: 40px;"></i>
+
+                                            <h5 class="mb-1">Aucune facture trouvée</h5>
+
+                                            <p class="text-muted mb-0">
+                                                Aucune facture ne correspond aux critères de recherche.
+                                            </p>
+
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <small class="text-muted">
+                            Affichage de {{ $factures->firstItem() ?? 0 }}
+                            à {{ $factures->lastItem() ?? 0 }}
+                            sur {{ $factures->total() }} factures
+                        </small>
+                    </div>
+                    @if ($factures->lastPage() > 1)
+                        <nav aria-label="Navigation des factures" class="mt-4">
+                            <ul class="pagination justify-content-center mb-0">
+
+                                {{-- Page précédente --}}
+                                <li class="page-item {{ $factures->onFirstPage() ? 'disabled' : '' }}">
+                                    <a class="page-link" href="{{ $factures->previousPageUrl() ?? '#' }}">
+                                        Précédent
+                                    </a>
+                                </li>
+
+                                {{-- Numéros des pages --}}
+                                @foreach ($factures->getUrlRange(1, $factures->lastPage()) as $page => $url)
+                                    <li class="page-item {{ $factures->currentPage() == $page ? 'active' : '' }}">
+                                        <a class="page-link" href="{{ $url }}">
+                                            {{ $page }}
+                                        </a>
+                                    </li>
+                                @endforeach
+
+                                {{-- Page suivante --}}
+                                <li class="page-item {{ $factures->hasMorePages() ? '' : 'disabled' }}">
+                                    <a class="page-link" href="{{ $factures->nextPageUrl() ?? '#' }}">
+                                        Suivant
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </nav>
+                    @endif
                 </div>
-            </div>
+            @endif
         </div>
-    </div>
-</div>
-
-<!-- Pagination -->
-<nav aria-label="Navigation des factures" class="mt-4">
-    <ul class="pagination justify-content-center mb-0">
-        <li class="page-item disabled">
-            <a class="page-link" href="#">Précédent</a>
-        </li>
-        <li class="page-item active">
-            <a class="page-link" href="#">1</a>
-        </li>
-        <li class="page-item">
-            <a class="page-link" href="#">2</a>
-        </li>
-        <li class="page-item">
-            <a class="page-link" href="#">Suivant</a>
-        </li>
-    </ul>
-</nav>
 
 
 
-
-        
-
-
-
-     
-
-    </div>
-
-    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    {{-- <script>
-        function confirmDelete(public_id) {
-            Swal.fire({
-                title: 'Êtes-vous sûr de supprimer cette vente ?',
-                text: "Cette action est irréversible !",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Oui, supprimer',
-                cancelButtonText: 'Annuler'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById('delete-form-' + public_id).submit();
-                }
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const btnB = document.getElementById('btnBoutique');
-            const btnM = document.getElementById('btnMagasin');
-            const divB = document.getElementById('ventesBoutique');
-            const divM = document.getElementById('ventesMagasin');
-
-            btnB.onclick = () => {
-                divB.classList.remove('d-none');
-                divM.classList.add('d-none');
-                btnB.className = 'btn btn-dark px-4 shadow-none';
-                btnM.className = 'btn btn-outline-dark px-4 shadow-none';
-            };
-
-            btnM.onclick = () => {
-                divM.classList.remove('d-none');
-                divB.classList.add('d-none');
-                btnM.className = 'btn btn-dark px-4 shadow-none';
-                btnB.className = 'btn btn-outline-dark px-4 shadow-none';
-            };
-        });
-    </script> --}}
+    @endsection
 
 
 
-@endsection
+    {{-- <th>Émise par</th> --}}
