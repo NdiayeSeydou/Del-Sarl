@@ -20,10 +20,7 @@
                 </p>
             </div>
 
-            <a href="{{ route('bordereau.index') }}" class="btn btn-light">
-
-                Retour
-            </a>
+           
 
         </div>
 

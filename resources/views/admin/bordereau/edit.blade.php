@@ -26,11 +26,7 @@
                 </p>
             </div>
 
-            <a href="{{ route('bordereau.index') }}"
-               class="btn btn-outline-secondary">
-                Retour
-            </a>
-
+           
         </div>
 
 

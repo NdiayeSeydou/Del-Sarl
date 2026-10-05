@@ -276,30 +276,4 @@
 
         </div>
     </div>
-
-
-    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
-
-    <script>
-        const swiperBlog = new Swiper('#swiper-1', {
-            slidesPerView: 1,
-            spaceBetween: 100,
-            speed: 900,
-            loop: true,
-            pagination: {
-                el: '.swiper-pagination',
-                clickable: true,
-            }
-        });
-
-        document.querySelector('.swiper-next')
-            .addEventListener('click', () => swiperBlog.slideNext());
-
-        document.querySelector('.swiper-prev')
-            .addEventListener('click', () => swiperBlog.slidePrev());
-    </script>
-
-
-
-
 @endsection

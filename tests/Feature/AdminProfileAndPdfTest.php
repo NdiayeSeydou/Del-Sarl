@@ -45,6 +45,40 @@ class AdminProfileAndPdfTest extends TestCase
         $this->get(route('dashboard'))->assertRedirect(route('login'));
     }
 
+    public function test_dashboard_renders_statistics_and_recent_documents(): void
+    {
+        $user = User::factory()->create();
+
+        Facture::create([
+            'client' => 'Client Dashboard Facture',
+            'num_facture' => 'FAC-DASH-001',
+            'date_facture' => now()->toDateString(),
+            'statut_paiement' => 'unpaid',
+            'grand_total' => 12500,
+        ]);
+        Proforma::create([
+            'client' => 'Client Dashboard Proforma',
+            'num_proforma' => 'PRO-DASH-001',
+            'date_proforma' => now()->toDateString(),
+            'devise' => 'XOF',
+            'grand_total' => 15000,
+        ]);
+        Bordereau::create([
+            'client' => 'Client Dashboard Bordereau',
+            'num_bl' => 'BL-DASH-001',
+            'date_livraison' => now()->toDateString(),
+            'total_quantite' => 1,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('12 500 F')
+            ->assertSee('FAC-DASH-001')
+            ->assertSee('PRO-DASH-001')
+            ->assertSee('BL-DASH-001');
+    }
+
     public function test_auth_migration_handles_existing_users_without_fonction_column(): void
     {
         Schema::table('users', function (Blueprint $table): void {
