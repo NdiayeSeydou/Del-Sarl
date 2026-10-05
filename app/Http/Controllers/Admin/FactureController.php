@@ -10,36 +10,55 @@ use Illuminate\Support\Facades\DB;
 class FactureController extends Controller
 {
     private function buildNumero(string $prefix = 'FAC'): string
-    {
-        $annee = now()->year;
+{
+    $annee = (int) now()->year;
 
-        // Créer le compteur de l'année s'il n'existe pas
-        DB::table('facture_sequences')->insertOrIgnore([
-            'annee' => $annee,
-            'dernier_numero' => 0,
-            'created_at' => now(),
+    // Créer le compteur de l'année s'il n'existe pas.
+    DB::table('facture_sequences')->insertOrIgnore([
+        'annee' => $annee,
+        'dernier_numero' => 0,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    // Verrouiller le compteur pendant la transaction.
+    $sequence = DB::table('facture_sequences')
+        ->where('annee', $annee)
+        ->lockForUpdate()
+        ->first();
+
+    // Rechercher le plus grand numéro déjà attribué cette année.
+    $dernierNumeroExistant = Facture::where(
+        'num_facture',
+        'like',
+        $prefix . '-' . $annee . '-%'
+    )
+        ->selectRaw("
+            MAX(
+                CAST(
+                    SUBSTRING(num_facture FROM '[0-9]+$')
+                    AS INTEGER
+                )
+            ) AS dernier_numero
+        ")
+        ->value('dernier_numero');
+
+    // Prendre le plus grand numéro entre le compteur et les factures existantes.
+    $nouveauNumero = max(
+        (int) ($sequence->dernier_numero ?? 0),
+        (int) ($dernierNumeroExistant ?? 0)
+    ) + 1;
+
+    // Mettre à jour le compteur.
+    DB::table('facture_sequences')
+        ->where('annee', $annee)
+        ->update([
+            'dernier_numero' => $nouveauNumero,
             'updated_at' => now(),
         ]);
 
-        // Verrouiller le compteur pour éviter les doublons
-        $sequence = DB::table('facture_sequences')
-            ->where('annee', $annee)
-            ->lockForUpdate()
-            ->first();
-
-        $nouveauNumero = $sequence->dernier_numero + 1;
-
-        // Enregistrer le nouveau numéro
-        DB::table('facture_sequences')
-            ->where('annee', $annee)
-            ->update([
-                'dernier_numero' => $nouveauNumero,
-                'updated_at' => now(),
-            ]);
-
-        return sprintf('%s-%d-%04d', $prefix, $annee, $nouveauNumero);
-    }
-
+    return sprintf('%s-%d-%04d', $prefix, $annee, $nouveauNumero);
+}
     public function index(Request $request)
     {
         $query = Facture::query();

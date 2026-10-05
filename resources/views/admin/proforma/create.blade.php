@@ -272,7 +272,7 @@
                 <div class="col-lg-12 text-end mb-4">
                     <a href="#" class="btn btn-outline-secondary me-2">Annuler</a>
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-lg me-1"></i> Enregistrer la Pro Forma
+                         Enregistrer la Pro Forma
                     </button>
                 </div>
             </div>

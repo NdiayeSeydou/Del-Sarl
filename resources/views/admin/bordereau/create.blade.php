@@ -1,234 +1,915 @@
 @extends('layouts.navbar')
+
 @section('title', 'Création d\'un bordereau — DEL SARL')
+
 @section('suite')
 
-<div class="container-fluid py-4">
-    <form action="{{ route('bordereau.store') }}" method="POST" id="formCreateBL" data-swal-confirm data-swal-title="Enregistrer ce bordereau ?" data-swal-text="Le bordereau et ses articles seront enregistrés." data-swal-confirm-text="Enregistrer">
-        @csrf
-        <!-- En-tête de la page -->
-        <div class="d-flex align-items-center justify-content-between mb-4">
+    <div class="container-fluid">
+
+        {{-- ========================================================= --}}
+        {{-- EN-TÊTE --}}
+        {{-- ========================================================= --}}
+
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+
             <div>
-                <h3 class="mb-1 fw-bold text-dark">Nouveau Bordereau de Livraison</h3>
-                <p class="text-muted mb-0">Remplissez les informations ci-dessous pour générer le bordereau.</p>
+                <h4 class="mb-1">Créer un bordereau de livraison</h4>
+
+                <p class="text-muted mb-0">
+                    Créez un nouveau bordereau à partir d'une proforma existante.
+                </p>
             </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route('bordereau.index') }}" class="btn btn-outline-secondary">Annuler</a>
+
+            <a href="{{ route('bordereau.index') }}" class="btn btn-light">
+
+                Retour
+            </a>
+
+        </div>
+
+
+        {{-- ========================================================= --}}
+        {{-- MESSAGES D'ERREUR --}}
+        {{-- ========================================================= --}}
+
+        @if ($errors->any())
+
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+
+                <div class="fw-semibold mb-1">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Veuillez corriger les erreurs suivantes :
+                </div>
+
+                <ul class="mb-0 ps-4">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer">
+                </button>
+
+            </div>
+
+        @endif
+
+
+        {{-- ========================================================= --}}
+        {{-- FORMULAIRE --}}
+        {{-- ========================================================= --}}
+
+        <form action="{{ route('bordereau.store') }}" method="POST" id="formCreateBL" data-swal-confirm="true">
+
+            @csrf
+
+
+            {{-- ========================================================= --}}
+            {{-- INFORMATIONS GÉNÉRALES --}}
+            {{-- ========================================================= --}}
+
+            <div class="card mb-4">
+
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        Informations générales
+                    </h5>
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row g-3">
+
+                        {{-- Proforma --}}
+                        <div class="col-md-8">
+
+                            <label for="proforma_id" class="form-label">
+                                Proforma <span class="text-danger">*</span>
+                            </label>
+
+                            <select name="proforma_id" id="proforma_id"
+                                class="form-select @error('proforma_id') is-invalid @enderror" required>
+
+                                <option value="">
+                                    -- Sélectionner une proforma --
+                                </option>
+
+                                @foreach ($proformas as $proforma)
+                                    <option value="{{ $proforma->id }}" data-numero="{{ $proforma->num_proforma }}"
+                                        data-date="{{ \Carbon\Carbon::parse($proforma->date_proforma)->format('d/m/Y') }}"
+                                        data-client="{{ $proforma->client }}"
+                                        data-reference="Facture du pro forma DEL SARL du {{ \Carbon\Carbon::parse($proforma->date_proforma)->format('d/m/Y') }}"
+                                        data-articles='@json($proforma->articles)'
+                                        {{ old('proforma_id') == $proforma->id ? 'selected' : '' }}>
+                                        {{ $proforma->num_proforma }}
+                                        — {{ \Carbon\Carbon::parse($proforma->date_proforma)->format('d/m/Y') }}
+                                        — {{ $proforma->client }}
+                                    </option>
+                                @endforeach
+
+                            </select>
+
+                            @error('proforma_id')
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
+                            @enderror
+
+                            <small class="text-muted">
+                                Sélectionnez la proforma correspondant à la livraison.
+                            </small>
+
+                        </div>
+
+
+                        {{-- Numéro BL --}}
+                        <div class="col-md-4">
+
+                            <label for="num_bl" class="form-label">
+                                N° Bordereau
+                            </label>
+
+                            <input type="text" id="num_bl" class="form-control" value="{{ $prochainNumero }}"
+                                readonly>
+
+                            <small class="text-muted">
+                                Le numéro sera généré automatiquement lors de l'enregistrement.
+                            </small>
+
+                        </div>
+
+
+                        {{-- Date de livraison --}}
+                        <div class="col-md-4">
+
+                            <label for="date_livraison" class="form-label">
+                                Date de livraison
+                                <span class="text-danger">*</span>
+                            </label>
+
+                            <input type="date" name="date_livraison" id="date_livraison"
+                                class="form-control @error('date_livraison') is-invalid @enderror"
+                                value="{{ old('date_livraison', date('Y-m-d')) }}" required>
+
+                            @error('date_livraison')
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
+                            @enderror
+
+                        </div>
+
+
+                        {{-- Référence --}}
+                        <div class="col-md-8">
+
+                            <label for="reference" class="form-label">
+                                Référence
+                            </label>
+
+                            <input type="text" name="reference" id="reference" class="form-control"
+                                value="{{ old('reference') }}" readonly>
+
+                            <small class="text-muted">
+                                Cette référence est générée automatiquement à partir de la proforma sélectionnée.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            {{-- ========================================================= --}}
+            {{-- ARTICLES --}}
+            {{-- ========================================================= --}}
+
+            <div class="card mb-4">
+
+                <div class="card-header d-flex align-items-center justify-content-between">
+
+                    <div>
+
+                        <h5 class="card-title mb-0">
+                            Articles à livrer
+                        </h5>
+
+                        <small class="text-muted">
+                            Les articles de la proforma sont chargés automatiquement.
+                        </small>
+
+                    </div>
+
+                    <button type="button" class="btn btn-primary btn-sm" id="btnAddRow">
+
+                        <i class="bi bi-plus-lg me-1"></i>
+                        Ajouter un article
+
+                    </button>
+
+                </div>
+
+
+                <div class="card-body p-0">
+
+                    <div class="table-responsive">
+
+                        <table class="table table-hover align-middle mb-0" id="tableArticles">
+
+                            <thead class="table-light">
+
+                                <tr>
+
+                                    <th class="text-center" style="width: 60px;">
+                                        #
+                                    </th>
+
+                                    <th>
+                                        Désignation
+                                    </th>
+
+                                    <th style="width: 150px;">
+                                        Quantité
+                                    </th>
+
+                                    <th>
+                                        Observations
+                                    </th>
+
+                                    <th class="text-center" style="width: 70px;">
+                                        Action
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody id="tbodyArticles">
+                                {{-- Les articles seront ajoutés par JavaScript --}}
+                            </tbody>
+
+
+                            <tfoot>
+
+                                <tr>
+
+                                    <th colspan="2" class="text-end">
+                                        Total quantité
+                                    </th>
+
+                                    <th>
+
+                                        <input type="text" id="totalQty" class="form-control" value="0" readonly>
+
+                                    </th>
+
+                                    <th colspan="2"></th>
+
+                                </tr>
+
+                            </tfoot>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            {{-- ========================================================= --}}
+            {{-- INFORMATIONS DE LIVRAISON --}}
+            {{-- ========================================================= --}}
+
+            <div class="card mb-4">
+
+                <div class="card-header">
+
+                    <h5 class="card-title mb-0">
+                        Informations de réception
+                    </h5>
+
+                </div>
+
+
+                <div class="card-body">
+
+                    <div class="row g-3">
+
+                        {{-- Émetteur --}}
+                        <div class="col-md-6">
+
+                            <div class="border rounded p-3 h-100">
+
+                                <h6 class="fw-semibold mb-3">
+                                    Émetteur
+                                </h6>
+
+
+                                <div class="mb-3">
+
+                                    <label for="emetteur_nom" class="form-label">
+                                        Nom
+                                    </label>
+
+                                    <input type="text" name="emetteur_nom" id="emetteur_nom" class="form-control"
+                                        value="{{ old('emetteur_nom', $user->name ?? '') }}" readonly>
+
+                                </div>
+
+
+                                <div>
+
+                                    <label for="emetteur_fonction" class="form-label">
+                                        Fonction
+                                    </label>
+
+                                    <input type="text" name="emetteur_fonction" id="emetteur_fonction"
+                                        class="form-control"
+                                        value="{{ old('emetteur_fonction', $user->fonction ?? '') }}" readonly>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        {{-- Récepteur --}}
+                        <div class="col-md-6">
+
+                            <div class="border rounded p-3 h-100">
+
+                                <h6 class="fw-semibold mb-3">
+                                    Récepteur
+                                </h6>
+
+
+                                <div class="mb-3">
+
+                                    <label for="recepteur_nom" class="form-label">
+                                        Nom
+                                    </label>
+
+                                    <input type="text" name="recepteur_nom" id="recepteur_nom" class="form-control"
+                                        value="{{ old('recepteur_nom') }}" placeholder="Nom du réceptionnaire">
+
+                                </div>
+
+
+                                <div>
+
+                                    <label for="recepteur_fonction" class="form-label">
+                                        Fonction
+                                    </label>
+
+                                    <input type="text" name="recepteur_fonction" id="recepteur_fonction"
+                                        class="form-control" value="{{ old('recepteur_fonction') }}"
+                                        placeholder="Fonction du réceptionnaire">
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            {{-- ========================================================= --}}
+            {{-- ACTIONS --}}
+            {{-- ========================================================= --}}
+
+            <div class="d-flex justify-content-end gap-2 mb-5">
+
+                <a href="{{ route('bordereau.index') }}" class="btn btn-light">
+
+                    Annuler
+
+                </a>
+
                 <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-check-lg me-1"></i> Enregistrer le Bordereau
+
+
+                    Enregistrer le bordereau
+
                 </button>
-            </div>
-        </div>
 
-        <div class="row g-4">
-            <!-- Section Informations Générales -->
-            <div class="col-lg-12">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white py-3 border-bottom-0">
-                        <h5 class="card-title mb-0 fw-bold text-primary">
-                            <i class="bi bi-file-earmark-text me-2"></i>Informations du Bordereau
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Client / Destinataire <span class="text-danger">*</span></label>
-                                <input type="text" name="client" class="form-control" placeholder="ex: MINISTÈRE DE L'ADMINISTRATION TERRITORIALE" required>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-semibold">Date de livraison <span class="text-danger">*</span></label>
-                                <input type="date" name="date_livraison" class="form-control" value="{{ date('Y-m-d') }}" required>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-semibold">N° BL</label>
-                                <input type="text" name="num_bl" class="form-control" placeholder="ex: BL-2026-001">
-                            </div>
-                            <div class="col-md-12">
-                                <label class="form-label fw-semibold">Référence / Note</label>
-                                <input type="text" name="reference" class="form-control" placeholder="ex: Facture pro forma DEL SARL du 25/09/2026">
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
-            <!-- Section Liste des Articles Dynamique -->
-            <div class="col-lg-12">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom-0">
-                        <h5 class="card-title mb-0 fw-bold text-primary">
-                            <i class="bi bi-box-seam me-2"></i>Articles Livrés
-                        </h5>
-                        <button type="button" class="btn btn-sm btn-light-primary text-primary fw-semibold" id="btnAddRow">
-                            <i class="bi bi-plus-circle me-1"></i>Ajouter un article
-                        </button>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0" id="tableArticles">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th style="width: 50px;" class="text-center">N°</th>
-                                        <th>Désignation <span class="text-danger">*</span></th>
-                                        <th style="width: 160px;">Qté Livrée <span class="text-danger">*</span></th>
-                                        <th>Observations</th>
-                                        <th style="width: 60px;" class="text-center">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tbodyArticles">
-                                    <!-- Ligne 1 par défaut -->
-                                    <tr class="article-row">
-                                        <td class="text-center row-number fw-bold text-muted">1</td>
-                                        <td>
-                                            <input type="text" name="articles[0][designation]" class="form-control" placeholder="ex: Photocopieur CANON imageRUNNER" required>
-                                        </td>
-                                        <td>
-                                            <input type="number" name="articles[0][quantite]" class="form-control qte-input" min="1" value="1" required>
-                                        </td>
-                                        <td>
-                                            <input type="text" name="articles[0][observations]" class="form-control" placeholder="Remarques / État (Optionnel)">
-                                        </td>
-                                        <td class="text-center">
-                                            <button type="button" class="btn btn-ghost btn-icon btn-sm text-danger btn-remove-row" title="Supprimer">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                                <tfoot class="table-light">
-                                    <tr>
-                                        <td colspan="2" class="text-end fw-bold text-uppercase">Total Articles Livrés :</td>
-                                        <td colspan="3" class="fw-bold text-primary fs-6" id="totalQty">1</td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        </form>
 
-            <!-- Section Signatures & Intervenants -->
-            <div class="col-lg-12">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white py-3 border-bottom-0">
-                        <h5 class="card-title mb-0 fw-bold text-primary">
-                            <i class="bi bi-pen me-2"></i>Signataires & Réception
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row g-4">
-                            <!-- Emetteur (DEL SARL) -->
-                            <div class="col-md-6 border-end">
-                                <h6 class="fw-bold text-dark mb-3">Pour DEL SARL (La Direction)</h6>
-                                <div class="row g-3">
-                                    <div class="col-12">
-                                        <label class="form-label small text-muted">Nom de l'émetteur</label>
-                                        <input type="text" name="emetteur_nom" class="form-control" placeholder="ex: Doucouré Aïssata">
-                                    </div>
-                                    <div class="col-12">
-                                        <label class="form-label small text-muted">Fonction</label>
-                                        <input type="text" name="emetteur_fonction" class="form-control" placeholder="ex: Gérante Associée">
-                                    </div>
-                                </div>
-                            </div>
+    </div>
 
-                            <!-- Réceptionnaire (Client) -->
-                            <div class="col-md-6">
-                                <h6 class="fw-bold text-dark mb-3">Pour le Client (Réceptionnaire)</h6>
-                                <div class="row g-3">
-                                    <div class="col-12">
-                                        <label class="form-label small text-muted">Nom du récepteur</label>
-                                        <input type="text" name="recepteur_nom" class="form-control" placeholder="ex: Youba Maïga">
-                                    </div>
-                                    <div class="col-12">
-                                        <label class="form-label small text-muted">Fonction</label>
-                                        <input type="text" name="recepteur_fonction" class="form-control" placeholder="ex: Agent à la DFM / DCM">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </form>
-</div>
 
-<!-- JavaScript Vanilla pour la gestion dynamique des lignes d'articles -->
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const tbody = document.getElementById('tbodyArticles');
-    const btnAdd = document.getElementById('btnAddRow');
-    const totalQtyEl = document.getElementById('totalQty');
+    {{-- ============================================================= --}}
+    {{-- JAVASCRIPT --}}
+    {{-- ============================================================= --}}
 
-    // Mettre à jour les numéros de ligne et calculer la quantité totale
-    function updateCalculations() {
-        const rows = tbody.querySelectorAll('.article-row');
-        let total = 0;
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
 
-        rows.forEach((row, index) => {
-            // Mise à jour du numéro
-            row.querySelector('.row-number').textContent = index + 1;
-            
-            // Re-indexation des noms d'inputs pour Laravel
-            const inputs = row.querySelectorAll('input');
-            inputs[0].name = `articles[${index}][designation]`;
-            inputs[1].name = `articles[${index}][quantite]`;
-            inputs[2].name = `articles[${index}][observations]`;
+            const proformaSelect = document.getElementById('proforma_id');
+            const referenceInput = document.getElementById('reference');
+            const tbody = document.getElementById('tbodyArticles');
+            const btnAddRow = document.getElementById('btnAddRow');
+            const totalQty = document.getElementById('totalQty');
 
-            // Calcul du total
-            const qtyVal = parseFloat(inputs[1].value) || 0;
-            total += qtyVal;
-        });
 
-        totalQtyEl.textContent = total;
-    }
+            /*
+            |--------------------------------------------------------------------------
+            | Ajouter une ligne
+            |--------------------------------------------------------------------------
+            */
 
-    // Ajouter une ligne
-    btnAdd.addEventListener('click', function () {
-        const rowCount = tbody.querySelectorAll('.article-row').length;
-        const newRow = document.createElement('tr');
-        newRow.className = 'article-row';
-        newRow.innerHTML = `
-            <td class="text-center row-number fw-bold text-muted">${rowCount + 1}</td>
-            <td>
-                <input type="text" class="form-control" placeholder="Désignation de l'article" required>
-            </td>
-            <td>
-                <input type="number" class="form-control qte-input" min="1" value="1" required>
-            </td>
-            <td>
-                <input type="text" class="form-control" placeholder="Remarques / État (Optionnel)">
-            </td>
-            <td class="text-center">
-                <button type="button" class="btn btn-ghost btn-icon btn-sm text-danger btn-remove-row" title="Supprimer">
-                    <i class="bi bi-trash"></i>
-                </button>
-            </td>
+            function addRow(article = {}) {
+
+                const index = tbody.querySelectorAll('tr').length;
+
+                const row = document.createElement('tr');
+
+
+                // Numéro
+                const tdNumber = document.createElement('td');
+
+                tdNumber.className = 'text-center row-number';
+                tdNumber.textContent = index + 1;
+
+
+                // Désignation
+                const tdDesignation = document.createElement('td');
+
+                const designationInput = document.createElement('input');
+
+                designationInput.type = 'text';
+                designationInput.className = 'form-control article-designation';
+                designationInput.name = `articles[${index}][designation]`;
+                designationInput.required = true;
+                designationInput.placeholder = "Désignation de l'article";
+                designationInput.value = article.designation ?? '';
+
+                tdDesignation.appendChild(designationInput);
+
+
+                // Quantité
+                const tdQuantity = document.createElement('td');
+
+                const quantityInput = document.createElement('input');
+
+                quantityInput.type = 'number';
+                quantityInput.className = 'form-control quantity';
+                quantityInput.name = `articles[${index}][quantite]`;
+                quantityInput.min = '1';
+                quantityInput.step = '1';
+                quantityInput.required = true;
+                quantityInput.value = article.quantite ?? 1;
+
+                tdQuantity.appendChild(quantityInput);
+
+
+                // Observations
+                const tdObservations = document.createElement('td');
+
+                const observationsInput = document.createElement('input');
+
+                observationsInput.type = 'text';
+                observationsInput.className = 'form-control article-observation';
+                observationsInput.name = `articles[${index}][observations]`;
+                observationsInput.placeholder = 'Observation éventuelle';
+                observationsInput.value = article.observations ?? '';
+
+                tdObservations.appendChild(observationsInput);
+
+
+                // Action
+                const tdAction = document.createElement('td');
+
+                tdAction.className = 'text-center';
+
+                const deleteButton = document.createElement('button');
+
+                deleteButton.type = 'button';
+
+                deleteButton.className =
+                    'btn btn-ghost btn-icon btn-sm rounded-circle btn-remove-row';
+
+                deleteButton.title = 'Supprimer cet article';
+
+                deleteButton.innerHTML = `
+            <i class="bi bi-trash"></i>
         `;
-        tbody.appendChild(newRow);
-        updateCalculations();
-    });
 
-    // Supprimer une ligne
-    tbody.addEventListener('click', function (e) {
-        if (e.target.closest('.btn-remove-row')) {
-            const rows = tbody.querySelectorAll('.article-row');
-            if (rows.length > 1) {
-                e.target.closest('.article-row').remove();
+                tdAction.appendChild(deleteButton);
+
+
+                // Assemblage
+                row.appendChild(tdNumber);
+                row.appendChild(tdDesignation);
+                row.appendChild(tdQuantity);
+                row.appendChild(tdObservations);
+                row.appendChild(tdAction);
+
+                tbody.appendChild(row);
+
                 updateCalculations();
-            } else {
-                alert('Le bordereau doit contenir au moins un article.');
             }
-        }
-    });
 
-    // Écouter les changements de quantité
-    tbody.addEventListener('input', function (e) {
-        if (e.target.classList.contains('qte-input')) {
-            updateCalculations();
-        }
-    });
-});
-</script>
+
+            /*
+            |--------------------------------------------------------------------------
+            | Recalculer les lignes et le total
+            |--------------------------------------------------------------------------
+            */
+
+            function updateCalculations() {
+
+                const rows = tbody.querySelectorAll('tr');
+
+                let total = 0;
+
+
+                rows.forEach((row, index) => {
+
+                    // Numéro
+                    const numberCell =
+                        row.querySelector('.row-number');
+
+                    if (numberCell) {
+                        numberCell.textContent = index + 1;
+                    }
+
+
+                    // Désignation
+                    const designationInput =
+                        row.querySelector('.article-designation');
+
+                    if (designationInput) {
+
+                        designationInput.name =
+                            `articles[${index}][designation]`;
+
+                    }
+
+
+                    // Quantité
+                    const quantityInput =
+                        row.querySelector('.quantity');
+
+                    if (quantityInput) {
+
+                        quantityInput.name =
+                            `articles[${index}][quantite]`;
+
+                        total +=
+                            parseInt(quantityInput.value, 10) || 0;
+
+                    }
+
+
+                    // Observations
+                    const observationsInput =
+                        row.querySelector('.article-observation');
+
+                    if (observationsInput) {
+
+                        observationsInput.name =
+                            `articles[${index}][observations]`;
+
+                    }
+
+                });
+
+
+                totalQty.value = total;
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Charger les articles de la proforma
+            |--------------------------------------------------------------------------
+            */
+
+            function loadProforma() {
+
+                const option =
+                    proformaSelect.options[
+                        proformaSelect.selectedIndex
+                    ];
+
+
+                if (!option || !option.value) {
+
+                    referenceInput.value = '';
+
+                    tbody.innerHTML = '';
+
+                    addRow();
+
+                    return;
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Référence
+                |--------------------------------------------------------------------------
+                */
+
+                referenceInput.value =
+                    option.dataset.reference || '';
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Articles
+                |--------------------------------------------------------------------------
+                */
+
+                let articles = [];
+
+
+                try {
+
+                    articles =
+                        JSON.parse(
+                            option.dataset.articles || '[]'
+                        );
+
+                } catch (error) {
+
+                    console.error(
+                        'Impossible de récupérer les articles de la proforma.',
+                        error
+                    );
+
+                    articles = [];
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Vider les anciennes lignes
+                |--------------------------------------------------------------------------
+                */
+
+                tbody.innerHTML = '';
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Ajouter les articles
+                |--------------------------------------------------------------------------
+                */
+
+                if (articles.length > 0) {
+
+                    articles.forEach(article => {
+
+                        addRow({
+
+                            designation: article.designation,
+
+                            quantite: article.quantite,
+
+                            observations: ''
+
+                        });
+
+                    });
+
+                } else {
+
+                    addRow();
+
+                }
+
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Sélection d'une proforma
+            |--------------------------------------------------------------------------
+            */
+
+            proformaSelect.addEventListener('change', function() {
+
+                const option =
+                    this.options[this.selectedIndex];
+
+
+                if (!option || !this.value) {
+
+                    loadProforma();
+
+                    return;
+                }
+
+
+                // Charger les articles et la référence
+                loadProforma();
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Afficher uniquement le numéro après sélection
+                |--------------------------------------------------------------------------
+                */
+
+                option.textContent =
+                    option.dataset.numero;
+
+            });
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Lorsque l'utilisateur ouvre à nouveau la liste
+            |--------------------------------------------------------------------------
+            |
+            | On remet temporairement le texte complet :
+            | NUMÉRO — DATE — CLIENT
+            |
+            */
+
+            proformaSelect.addEventListener('focus', function() {
+
+                Array.from(this.options).forEach(option => {
+
+                    if (!option.dataset.numero) {
+                        return;
+                    }
+
+
+                    option.textContent =
+                        option.dataset.numero +
+                        ' — ' +
+                        option.dataset.date +
+                        ' — ' +
+                        option.dataset.client;
+
+                });
+
+            });
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Ajouter manuellement un article
+            |--------------------------------------------------------------------------
+            */
+
+            btnAddRow.addEventListener('click', function() {
+
+                addRow();
+
+            });
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Supprimer un article
+            |--------------------------------------------------------------------------
+            */
+
+            tbody.addEventListener('click', function(event) {
+
+                const button =
+                    event.target.closest('.btn-remove-row');
+
+
+                if (!button) {
+                    return;
+                }
+
+
+                const rows =
+                    tbody.querySelectorAll('tr');
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Garder au moins une ligne
+                |--------------------------------------------------------------------------
+                */
+
+                if (rows.length <= 1) {
+
+                    if (typeof Swal !== 'undefined') {
+
+                        Swal.fire({
+
+                            icon: 'info',
+
+                            title: 'Action impossible',
+
+                            text: 'Le bordereau doit contenir au moins un article.',
+
+                            confirmButtonText: 'OK'
+
+                        });
+
+                    } else {
+
+                        alert(
+                            'Le bordereau doit contenir au moins un article.'
+                        );
+
+                    }
+
+                    return;
+                }
+
+
+                button.closest('tr').remove();
+
+                updateCalculations();
+
+            });
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Modification des quantités
+            |--------------------------------------------------------------------------
+            */
+
+            tbody.addEventListener('input', function(event) {
+
+                if (
+                    event.target.classList.contains('quantity')
+                ) {
+
+                    updateCalculations();
+
+                }
+
+            });
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Restaurer la proforma après erreur de validation
+            |--------------------------------------------------------------------------
+            */
+
+            const oldProformaId =
+                @json(old('proforma_id'));
+
+
+            if (oldProformaId) {
+
+                const option =
+                    Array.from(proformaSelect.options)
+                    .find(
+                        option =>
+                        option.value == oldProformaId
+                    );
+
+
+                if (option) {
+
+                    proformaSelect.value =
+                        oldProformaId;
+
+                    loadProforma();
+
+                    /*
+                    | Après restauration, on affiche uniquement
+                    | le numéro dans le select.
+                    */
+
+                    option.textContent =
+                        option.dataset.numero;
+
+                }
+
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Si aucune proforma n'est sélectionnée
+            |--------------------------------------------------------------------------
+            */
+
+            if (!proformaSelect.value) {
+
+                addRow();
+
+            }
+
+        });
+    </script>
 
 @endsection

@@ -253,7 +253,9 @@
 
                 <!-- Bouton Déconnexion Séparé -->
                 <li class="nav-item">
-                    <form method="POST" action="{{ route('logout') }}" class="d-inline" data-swal-confirm data-swal-icon="warning" data-swal-title="Se déconnecter ?" data-swal-text="Votre session va être fermée." data-swal-confirm-text="Se déconnecter">
+                    <form method="POST" action="{{ route('logout') }}" class="d-inline" data-swal-confirm
+                        data-swal-icon="warning" data-swal-title="Se déconnecter ?"
+                        data-swal-text="Votre session va être fermée." data-swal-confirm-text="Se déconnecter">
                         @csrf
                         <button type="submit"
                             class="nav-link border-0 bg-transparent text-danger d-flex align-items-center gap-2 w-100">
@@ -756,109 +758,45 @@
                         <!-- Dropdown -->
                         <li class="ms-3 dropdown">
                             <a href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <img src="assets/images/avatar/avatar-1.jpg" alt=""
+                                <img src="{{ asset('dasher/logo.jpeg') }}" alt=""
                                     class="avatar avatar-sm rounded-circle" />
                             </a>
 
                             <div class="dropdown-menu dropdown-menu-end dropdown-menu-md p-0">
                                 <div>
                                     <div class="d-flex gap-3 align-items-center border-dashed border-bottom px-4 py-4">
-                                        <img src="assets/images/avatar/avatar-1.jpg" alt=""
-                                            class="avatar avatar-md rounded-circle" />
+
                                         <div>
-                                            <h4 class="mb-0 fs-5">{{ auth()->user()->name }}</h4>
+                                            <h4 class="mb-0 fs-5">
+                                                {{ auth()->user()->name ?: 'Admin' }}
+                                            </h4>
                                         </div>
                                     </div>
 
-                                    {{-- <div class="p-3 d-flex flex-column gap-1">
-                                        <a href="#!" class="dropdown-item d-flex align-items-center gap-2">
-                                            <span><svg xmlns="http://www.w3.org/2000/svg" width="20"
-                                                    height="20" viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    class="icon icon-tabler icons-tabler-outline icon-tabler-home-2">
-                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                    <path d="M5 12l-2 0l9 -9l9 9l-2 0" />
-                                                    <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
-                                                    <path d="M10 12h4v4h-4z" />
-                                                </svg>
-                                            </span>
-                                            <span>Home</span>
-                                        </a>
-                                        <a href="#!" class="dropdown-item d-flex align-items-center gap-2">
-                                            <span><svg xmlns="http://www.w3.org/2000/svg" width="20"
-                                                    height="20" viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    class="icon icon-tabler icons-tabler-outline icon-tabler-inbox">
-                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                    <path
-                                                        d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z" />
-                                                    <path d="M4 13h3l3 3h4l3 -3h3" />
-                                                </svg>
-                                            </span>
-                                            <span> Inbox</span>
-                                        </a>
-                                        <a href="#!" class="dropdown-item d-flex align-items-center gap-2">
-                                            <span><svg xmlns="http://www.w3.org/2000/svg" width="20"
-                                                    height="20" viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    class="icon icon-tabler icons-tabler-outline icon-tabler-message">
-                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                    <path d="M8 9h8" />
-                                                    <path d="M8 13h6" />
-                                                    <path
-                                                        d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12z" />
-                                                </svg>
-                                            </span>
-                                            <span> Chat</span>
-                                        </a>
-                                        <a href="#!" class="dropdown-item d-flex align-items-center gap-2">
-                                            <span><svg xmlns="http://www.w3.org/2000/svg" width="20"
-                                                    height="20" viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    class="icon icon-tabler icons-tabler-outline icon-tabler-activity">
-                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                    <path d="M3 12h4l3 8l4 -16l3 8h4" />
-                                                </svg>
-                                            </span>
-                                            <span> Activity</span>
-                                        </a>
-                                        <a href="#!" class="dropdown-item d-flex align-items-center gap-2">
-                                            <span><svg xmlns="http://www.w3.org/2000/svg" width="20"
-                                                    height="20" viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    class="icon icon-tabler icons-tabler-outline icon-tabler-settings">
-                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                    <path
-                                                        d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" />
-                                                    <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
-                                                </svg>
-                                            </span>
-                                            <span> Account Settings</span>
-                                        </a>
-                                    </div> --}}
+
 
                                     <div class="border-dashed border-top mb-4 pt-4 px-6">
-                                        <form method="POST" action="{{ route('logout') }}" data-swal-confirm data-swal-icon="warning" data-swal-title="Se déconnecter ?" data-swal-text="Votre session va être fermée." data-swal-confirm-text="Se déconnecter">
+                                        <form method="POST" action="{{ route('logout') }}" data-swal-confirm
+                                            data-swal-icon="warning" data-swal-title="Se déconnecter ?"
+                                            data-swal-text="Votre session va être fermée."
+                                            data-swal-confirm-text="Se déconnecter">
                                             @csrf
-                                            <button type="submit" class="btn btn-link p-0 text-secondary d-flex align-items-center gap-2 text-decoration-none">
-                                            <span>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                                                    class="icon icon-tabler icons-tabler-outline icon-tabler-login-2">
-                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                    <path
-                                                        d="M9 8v-2a2 2 0 0 1 2 -2h7a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-7a2 2 0 0 1 -2 -2v-2" />
-                                                    <path d="M3 12h13l-3 -3" />
-                                                    <path d="M13 15l3 -3" />
-                                                </svg>
-                                            </span>
-                                            <span>Se déconnecter</span></button>
+                                            <button type="submit"
+                                                class="btn btn-link p-0 text-secondary d-flex align-items-center gap-2 text-decoration-none">
+                                                <span>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20"
+                                                        height="20" viewBox="0 0 24 24" fill="none"
+                                                        stroke="currentColor" stroke-width="1.5"
+                                                        stroke-linecap="round" stroke-linejoin="round"
+                                                        class="icon icon-tabler icons-tabler-outline icon-tabler-login-2">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                        <path
+                                                            d="M9 8v-2a2 2 0 0 1 2 -2h7a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-7a2 2 0 0 1 -2 -2v-2" />
+                                                        <path d="M3 12h13l-3 -3" />
+                                                        <path d="M13 15l3 -3" />
+                                                    </svg>
+                                                </span>
+                                                <span>Se déconnecter</span></button>
                                         </form>
                                     </div>
                                 </div>

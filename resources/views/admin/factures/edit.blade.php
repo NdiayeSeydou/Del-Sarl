@@ -14,7 +14,7 @@
                     <p class="text-muted mb-0">Facture n° : <strong>{{ $facture->num_facture }}</strong></p>
                 </div>
                 <a href="{{ route('facture.index') }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-1"></i> Retour
+                     Retour
                 </a>
             </div>
 

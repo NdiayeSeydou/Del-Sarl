@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\BordereauController;
 use App\Http\Controllers\Admin\DocumentPdfController;
 use App\Http\Controllers\Admin\FactureController;
 use App\Http\Controllers\Admin\ProformaController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotFoundController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -14,9 +15,9 @@ Route::get('/', function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

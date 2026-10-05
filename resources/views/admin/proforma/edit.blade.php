@@ -22,7 +22,7 @@
 
             <div>
                 <h1 class="h3 mb-1 fw-bold text-dark">
-                    Modifier la proforma
+                    Modifier la facture Pro Forma
                 </h1>
 
                 <p class="text-muted mb-0">

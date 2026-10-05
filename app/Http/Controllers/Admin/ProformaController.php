@@ -57,30 +57,32 @@ class ProformaController extends Controller
     }
 
     public function index(Request $request)
-    {
-        $query = Proforma::query();
+{
+    $query = Proforma::query();
 
-        if ($request->filled('search')) {
-            $search = $request->search;
+    // Recherche par numéro de proforma ou client
+    if ($request->filled('search')) {
+        $search = trim($request->search);
 
-            $query->where(function ($q) use ($search) {
-                $q->where('num_proforma', 'like', "%{$search}%")
-                    ->orWhere('client', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('date')) {
-            $query->whereDate('date_proforma', $request->date);
-        }
-
-        $proformas = $query
-            ->orderByDesc('date_proforma')
-            ->orderByDesc('id')
-            ->paginate(22)
-            ->withQueryString();
-
-        return view('admin.proforma.index', compact('proformas'));
+        $query->where(function ($q) use ($search) {
+            $q->where('num_proforma', 'like', "%{$search}%")
+                ->orWhere('client', 'like', "%{$search}%");
+        });
     }
+
+    // Filtrage par date
+    if ($request->filled('date')) {
+        $query->whereDate('date_proforma', $request->date);
+    }
+
+    // Pagination : 22 proformas par page
+    $proformas = $query
+        ->orderByDesc('date_proforma')
+        ->paginate(22)
+        ->withQueryString();
+
+    return view('admin.proforma.index', compact('proformas'));
+}
 
     public function create()
     {

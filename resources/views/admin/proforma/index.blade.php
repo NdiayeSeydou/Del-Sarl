@@ -7,10 +7,10 @@
     <div class="custom-container py-4">
 
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h2 mb-0">Liste des proformas</h1>
+            <h1 class="h2 mb-0">Liste des Factures Pro Forma</h1>
 
             <a href="{{ route('proforma.create') }}" class="btn btn-dark">
-                <i class="bi bi-plus-circle me-1"></i>
+
                 Ajouter une proforma
             </a>
         </div>
@@ -174,7 +174,7 @@
 
                                     </div>
                                 </td>
-                                
+
 
                             </tr>
                         @endforeach
@@ -183,24 +183,64 @@
 
                 </table>
 
+             
             </div>
-
-            {{-- Pagination --}}
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <small class="text-muted">
+                    Affichage de {{ $proformas->firstItem() ?? 0 }}
+                    à {{ $proformas->lastItem() ?? 0 }}
+                    sur {{ $proformas->total() }} proformas
+                </small>
+            </div>
             @if ($proformas->lastPage() > 1)
-                <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
 
-                    <div class="text-muted small">
-                        Affichage de {{ $proformas->firstItem() }}
-                        à {{ $proformas->lastItem() }}
-                        sur {{ $proformas->total() }} proformas
-                    </div>
+                <nav aria-label="Navigation des proformas" class="mt-4">
 
-                    <div>
-                        {{ $proformas->withQueryString()->links('pagination::bootstrap-5') }}
-                    </div>
+                    <ul class="pagination justify-content-center mb-0">
 
-                </div>
+                        {{-- Page précédente --}}
+                        <li class="page-item {{ $proformas->onFirstPage() ? 'disabled' : '' }}">
+
+                            <a class="page-link" href="{{ $proformas->previousPageUrl() ?? '#' }}">
+
+                                Précédent
+
+                            </a>
+
+                        </li>
+
+
+                        {{-- Numéros des pages --}}
+                        @foreach ($proformas->getUrlRange(1, $proformas->lastPage()) as $page => $url)
+                            <li class="page-item {{ $proformas->currentPage() == $page ? 'active' : '' }}">
+
+                                <a class="page-link" href="{{ $url }}">
+
+                                    {{ $page }}
+
+                                </a>
+
+                            </li>
+                        @endforeach
+
+
+                        {{-- Page suivante --}}
+                        <li class="page-item {{ $proformas->hasMorePages() ? '' : 'disabled' }}">
+
+                            <a class="page-link" href="{{ $proformas->nextPageUrl() ?? '#' }}">
+
+                                Suivant
+
+                            </a>
+
+                        </li>
+
+                    </ul>
+
+                </nav>
+
             @endif
+
 
         @endif
 

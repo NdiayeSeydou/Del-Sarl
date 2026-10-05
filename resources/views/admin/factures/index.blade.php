@@ -10,7 +10,7 @@
         <div class="container py-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="h2 mb-0">Liste des factures</h1>
-                <a href="{{ route('facture.create') }}" class="btn btn-dark">+ Ajouter une facture</a>
+                <a href="{{ route('facture.create') }}" class="btn btn-dark">Ajouter une facture</a>
             </div>
 
             <!-- Formulaire de filtre -->
@@ -81,7 +81,7 @@
                                     </td>
 
                                     <td>
-                                        {{ number_format($facture->grand_total, 0, ',', ' ') }} F
+                                        {{ number_format($facture->grand_total, 0, ',', ' ') }} FCFA
                                     </td>
 
                                     <td>

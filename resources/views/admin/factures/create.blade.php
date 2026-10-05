@@ -273,7 +273,7 @@
                 <div class="col-lg-12 text-end mb-4">
                     <a href="{{ route('facture.index') }}" class="btn btn-outline-secondary me-2">Annuler</a>
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-lg me-1"></i> Enregistrer la Facture
+                         Enregistrer la Facture
                     </button>
                 </div>
             </div>
@@ -454,7 +454,7 @@
 
             tbody.addEventListener('input', function(e) {
                 if (e.target.classList.contains('qte-input') || e.target.classList.contains(
-                    'price-input')) {
+                        'price-input')) {
                     calculateTotals();
                 }
             });
