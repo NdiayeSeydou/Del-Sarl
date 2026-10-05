@@ -1,177 +1,294 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Facture pro forma</title>
-<style>
-  * { box-sizing:border-box; }
-  .row { display:table; width:100%; table-layout:fixed; }
-  .col-5,.col-7 { display:table-cell; vertical-align:top; }
-  .col-5 { width:41.666%; } .col-7 { width:58.334%; }
-  .text-end { text-align:right; } .text-center { text-align:center; }
-  .table { width:100%; border-collapse:collapse; }
-  .table th,.table td { padding:8px; }
-  .table-responsive { width:100%; }
-  .d-block { display:block; } .fs-6 { font-size:.9rem; }
-  .mb-0 { margin-bottom:0; } .mb-3 { margin-bottom:14px; }
-  .mb-4 { margin-bottom:20px; } .mt-2 { margin-top:8px; }
-  .pe-2 { padding-right:8px; }
-</style>
-<style>
-  body { background:#e9ecef; }
-  .facture { background:#fff; max-width:850px; margin:20px auto; padding:40px 45px; box-shadow:0 0 12px rgba(0,0,0,.15); font-family:Arial, Helvetica, sans-serif; color:#222; }
-  .logo-box { font-size:3.2rem; font-weight:900; font-style:italic; letter-spacing:-2px; line-height:1; }
-  .logo-sub { font-size:.8rem; font-weight:700; letter-spacing:1px; color:#333; }
-  .societe { font-weight:700; letter-spacing:1px; font-size:1.05rem; }
-  .entete-info { font-size:.85rem; }
-  .double-line { border-top:4px solid #222; border-bottom:2px solid #222; height:10px; margin:14px 0 30px; }
-  .titre { text-align:center; font-weight:800; letter-spacing:4px; font-size:1.8rem; margin:25px 0 35px; }
-  .label { font-size:.72rem; font-weight:700; letter-spacing:1px; color:#555; text-transform:uppercase; }
-  .valeur { font-weight:700; }
-  .table-facture thead th { background:#222; color:#fff; border:0; font-weight:700; }
-  .table-facture tbody td { border-color:transparent; padding:.7rem .5rem; }
-  .table-facture tfoot td { background:#222; color:#fff; font-weight:700; font-size:1.05rem; border:0; }
-  .arrete { font-size:.95rem; margin-top:25px; }
-  .direction { text-align:right; font-weight:700; letter-spacing:2px; margin-top:40px; padding-right:60px; }
-  @media print {
-    body { background:#fff; }
-    .facture { box-shadow:none; margin:0; max-width:100%; }
-    * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-  }
-</style>
+    <meta charset="UTF-8">
+    <title>Facture Pro Forma - {{ $proforma->num_proforma }}</title>
+
+    <style>
+        /* ---------------------------------------------------------
+           DomPDF : les marges de page se définissent ici.
+           Ne JAMAIS combiner width + padding sur un bloc : DomPDF
+           ignore box-sizing et le contenu déborde à droite.
+        --------------------------------------------------------- */
+        @page {
+            size: A4;
+            margin: 15mm 14mm 12mm 14mm;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: DejaVu Sans, sans-serif;
+            color: #222;
+            font-size: 10px;
+        }
+
+        table { border-collapse: collapse; }
+
+        /* ===== EN-TÊTE ===== */
+        .header { width: 100%; margin-bottom: 8px; }
+        .header-left  { width: 42%; vertical-align: top; }
+        .header-right { width: 58%; vertical-align: top; text-align: right; }
+
+        .logo-line {
+            line-height: 40px;
+            white-space: nowrap;
+        }
+        .logo {
+            font-size: 40px;
+            font-weight: bold;
+            font-style: italic;
+            letter-spacing: -3px;
+        }
+        .logo-sarl {
+            font-size: 15px;
+            font-weight: bold;
+            font-style: italic;
+            letter-spacing: 0;
+            margin-left: 4px;
+        }
+        .logo-subtitle {
+            margin-top: 5px;
+            font-size: 8px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .company-name {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+        .company-info {
+            font-size: 9px;
+            line-height: 15px;
+        }
+
+        /* ===== DOUBLE LIGNE (sans width, pour éviter tout débordement) ===== */
+        .separator {
+            border-top: 3px solid #222;
+            border-bottom: 1px solid #222;
+            height: 5px;
+            margin: 8px 0 22px 0;
+        }
+
+        /* ===== TITRE ===== */
+        .document-title {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            margin: 0 0 6px 0;
+        }
+        .document-number {
+            text-align: center;
+            font-size: 10px;
+            font-weight: bold;
+            margin-bottom: 24px;
+        }
+
+        /* ===== CLIENT / DATE / DEVISE ===== */
+        .infos { width: 100%; margin-bottom: 22px; }
+        .infos-left  { width: 62%; vertical-align: top; }
+        .infos-right { width: 38%; vertical-align: top; }
+
+        .label {
+            font-size: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            color: #555;
+            margin-bottom: 4px;
+        }
+        .value {
+            font-size: 11px;
+            font-weight: bold;
+            line-height: 16px;
+        }
+        .info-block { margin-bottom: 12px; }
+
+        /* ===== TABLEAU ===== */
+        .articles { width: 100%; }
+
+        /* Fond sur les <th> / <td> (DomPDF ne peint pas le fond de <thead>) */
+        .articles th {
+            background: #222;
+            color: #fff;
+            padding: 8px 6px;
+            font-size: 9px;
+            font-weight: bold;
+            text-align: left;
+        }
+        .articles td {
+            padding: 8px 6px;
+            font-size: 10px;
+            vertical-align: top;
+        }
+        .articles tbody tr { page-break-inside: avoid; }
+
+        .articles td.t-label,
+        .articles td.t-value {
+            background: #222;
+            color: #fff;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 8px 6px;
+            text-align: right;
+        }
+        .articles tr.sep td { border-top: 1px solid #fff; }
+
+        .center { text-align: center; }
+        .right  { text-align: right; }
+
+        /* ===== MONTANT EN LETTRES / REMARQUES / SIGNATURE ===== */
+        .amount-words {
+            margin-top: 22px;
+            font-size: 10px;
+            line-height: 16px;
+        }
+        .remarks {
+            margin-top: 14px;
+            font-size: 9px;
+            line-height: 14px;
+        }
+        .signature {
+            margin-top: 40px;
+            margin-right: 30px;      /* margin, pas padding */
+            text-align: right;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+        }
+    </style>
 </head>
 <body>
-<div class="facture">
 
-  <!-- EN-TÊTE -->
-  <div class="row align-items-center">
-    <div class="col-5">
-      <div class="logo-box">DEL<small class="d-block fs-6 fst-normal text-end pe-2">SARL</small></div>
-      <div class="logo-sub">INTÉGRATEUR DE SOLUTIONS</div>
-    </div>
-    <div class="col-7 text-end entete-info">
-      <div class="societe">DOUCOURÉ ÉQUIPEMENT ET LOGISTIQUE SARL</div>
-      <div>Hamdallaye ACI 2000 – Bamako, Mali</div>
-      <div>Tél. : +223 94 34 77 57 / +223 66 75 63 29</div>
-      <div>Email : delsarl15@gmail.com</div>
-    </div>
-  </div>
-  <div class="double-line"></div>
+@php
+    $hasRemise = !empty($proforma->appliquer_remise);
+    $hasTva    = !empty($proforma->appliquer_tva);
+    $fmt = fn ($n) => number_format($n, 0, ',', ' ');
+@endphp
 
-  <h1 class="titre">FACTURE PRO FORMA</h1>
-  <div class="text-center fw-bold mb-4">N° {{ $proforma->num_proforma }}</div>
+{{-- ===== EN-TÊTE ===== --}}
+<table class="header">
+    <tr>
+        <td class="header-left">
+            <div class="logo-line"><span class="logo">DEL</span><span class="logo-sarl">SARL</span></div>
+            <div class="logo-subtitle">INTÉGRATEUR DE SOLUTIONS</div>
+        </td>
+        <td class="header-right">
+            <div class="company-name">DOUCOURÉ ÉQUIPEMENT ET LOGISTIQUE SARL</div>
+            <div class="company-info">
+                Hamdallaye ACI 2000 – Bamako, Mali<br>
+                Tél. : +223 94 34 77 57 / +223 66 75 63 29<br>
+                Email : delsarl15@gmail.com
+            </div>
+        </td>
+    </tr>
+</table>
 
-  <!-- CLIENT / DATE -->
-  <div class="row mb-4">
-    <div class="col-7">
-      <div class="label">Client</div>
-      <div class="valeur">{{ $proforma->client }}</div>
-    </div>
-    <div class="col-5">
-      <div class="label">Date</div>
-      <div class="valeur mb-3">Bamako, le {{ \Carbon\Carbon::parse($proforma->date_proforma)->format('d/m/Y') }}</div>
-      <div class="label">Devise</div>
-      <div class="valeur">{{ $proforma->devise }}</div>
-    </div>
-  </div>
+<div class="separator"></div>
 
-  <!-- TABLEAU -->
-  <div class="table-responsive">
-    <table class="table table-facture align-middle mb-0">
-      <thead>
+<div class="document-title">FACTURE PRO FORMA</div>
+<div class="document-number">N° {{ $proforma->num_proforma }}</div>
+
+{{-- ===== CLIENT / DATE / DEVISE ===== --}}
+<table class="infos">
+    <tr>
+        <td class="infos-left">
+            <div class="info-block">
+                <div class="label">Client</div>
+                <div class="value">{{ $proforma->client }}</div>
+            </div>
+        </td>
+        <td class="infos-right">
+            <div class="info-block">
+                <div class="label">Date</div>
+                <div class="value">
+                    Bamako, le {{ \Carbon\Carbon::parse($proforma->date_proforma)->format('d/m/Y') }}
+                </div>
+            </div>
+            <div class="info-block">
+                <div class="label">Devise</div>
+                <div class="value">{{ $proforma->devise }}</div>
+            </div>
+        </td>
+    </tr>
+</table>
+
+{{-- ===== ARTICLES ===== --}}
+<table class="articles">
+    <thead>
         <tr>
-          <th style="width:50px">N°</th>
-          <th>Désignation</th>
-          <th class="text-center" style="width:60px">Qté</th>
-          <th class="text-end" style="width:130px">Prix unitaire</th>
-          <th class="text-end" style="width:130px">Prix total</th>
+            <th style="width:7%;">N°</th>
+            <th style="width:43%;">Désignation</th>
+            <th style="width:8%; text-align:center;">Qté</th>
+            <th style="width:20%; text-align:right;">Prix unitaire</th>
+            <th style="width:22%; text-align:right;">Prix total</th>
         </tr>
-      </thead>
-      <tbody>
+    </thead>
+
+    <tbody>
         @foreach($proforma->articles as $article)
-          <tr>
-            <td>{{ $loop->iteration }}</td>
-            <td>{{ $article->designation }}</td>
-            <td class="text-center">{{ $article->quantite }}</td>
-            <td class="text-end">{{ number_format($article->prix_unitaire, 0, ',', ' ') }}</td>
-            <td class="text-end">{{ number_format($article->prix_total, 0, ',', ' ') }}</td>
-          </tr>
+            <tr>
+                <td>{{ $loop->iteration }}</td>
+                <td>{{ $article->designation }}</td>
+                <td class="center">{{ $article->quantite }}</td>
+                <td class="right">{{ $fmt($article->prix_unitaire) }}</td>
+                <td class="right">{{ $fmt($article->prix_total) }}</td>
+            </tr>
         @endforeach
-      </tbody>
-      <tfoot>
+    </tbody>
+
+    <tfoot>
         <tr>
-          <td colspan="4" class="text-end">TOTAL HT ({{ $proforma->devise }})</td>
-          <td class="text-end">{{ number_format($proforma->subtotal_ht, 0, ',', ' ') }}</td>
+            <td colspan="4" class="t-label">TOTAL HT ({{ $proforma->devise }})</td>
+            <td class="t-value">{{ $fmt($proforma->subtotal_ht) }}</td>
         </tr>
-        @if($proforma->appliquer_remise)
-          <tr><td colspan="4" class="text-end">Remise ({{ $proforma->remise_pourcentage }} %)</td><td class="text-end">-{{ number_format($proforma->montant_remise, 0, ',', ' ') }}</td></tr>
-        @endif
-        @if($proforma->appliquer_tva)
-          <tr><td colspan="4" class="text-end">TVA ({{ $proforma->tva_pourcentage }} %)</td><td class="text-end">{{ number_format($proforma->montant_tva, 0, ',', ' ') }}</td></tr>
-        @endif
-        <tr><td colspan="4" class="text-end">TOTAL TTC</td><td class="text-end">{{ number_format($proforma->grand_total, 0, ',', ' ') }}</td></tr>
-      </tfoot>
-    </table>
-  </div>
 
-  <p class="arrete">
+        @if($hasRemise)
+            <tr class="sep">
+                <td colspan="4" class="t-label">REMISE ({{ $proforma->remise_pourcentage }} %)</td>
+                <td class="t-value">-{{ $fmt($proforma->montant_remise) }}</td>
+            </tr>
+        @endif
+
+        @if($hasTva)
+            <tr class="sep">
+                <td colspan="4" class="t-label">TVA ({{ $proforma->tva_pourcentage }} %)</td>
+                <td class="t-value">{{ $fmt($proforma->montant_tva) }}</td>
+            </tr>
+        @endif
+
+        {{-- Ligne finale : uniquement si elle apporte une information --}}
+        @if($hasTva)
+            <tr class="sep">
+                <td colspan="4" class="t-label">TOTAL TTC ({{ $proforma->devise }})</td>
+                <td class="t-value">{{ $fmt($proforma->grand_total) }}</td>
+            </tr>
+        @elseif($hasRemise)
+            <tr class="sep">
+                <td colspan="4" class="t-label">TOTAL NET HT ({{ $proforma->devise }})</td>
+                <td class="t-value">{{ $fmt($proforma->grand_total) }}</td>
+            </tr>
+        @endif
+    </tfoot>
+</table>
+
+{{-- ===== MONTANT EN LETTRES ===== --}}
+<div class="amount-words">
     Arrêtée la présente facture pro forma à la somme de :<br>
-    <strong>{{ $proforma->montant_lettres ?: number_format($proforma->grand_total, 0, ',', ' ') . ' ' . $proforma->devise }}</strong>
-  </p>
-
-  <p class="small">{{ $proforma->remarques }}</p>
-
-  <div class="direction">LA DIRECTION</div>
+    <strong>
+        {{ $proforma->montant_lettres ?: $fmt($proforma->grand_total) . ' ' . $proforma->devise }}
+    </strong>
 </div>
 
-{{-- <script>
-// ===== DONNÉES (à remplacer par celles de votre application) =====
-const facture = {
-  societe: {
-    nom: "DOUCOURÉ ÉQUIPEMENT ET LOGISTIQUE SARL",
-    adresse: "Hamdallaye ACI 2000 - Bamako, Mali",
-    tel: "Tél. : +223 94 34 77 57 / +223 66 75 63 29",
-    email: "Email : delsarl15@gmail.com"
-  },
-  client: "MINISTÈRE DE L'ADMINISTRATION TERRITORIALE ET DE LA DÉCENTRALISATION",
-  date: "Bamako, le 28/09/2026",
-  devise: "Franc CFA (XOF)",
-  lignes: [
-    { designation: "Photocopieur CANON imageRUNNER 4745i", qte: 1, pu: 7445000 },
-    { designation: "Photocopieur CANON imageRUNNER ADVANCE 6568i", qte: 1, pu: 13868750 },
-    { designation: "Scanner HP ScanJet Pro N4600 fnw1", qte: 4, pu: 1362500 },
-    { designation: "Stabilisateur 5KVA", qte: 1, pu: 222000 }
-  ],
-  // À générer automatiquement dans votre appli (conversion chiffres → lettres)
-  totalLettres: "Vingt-six millions neuf cent quatre vingt-cinq mille sept cent cinquante (26 985 750) francs CFA hors taxes."
-};
+{{-- ===== REMARQUES ===== --}}
+@if($proforma->remarques)
+    <div class="remarks">{{ $proforma->remarques }}</div>
+@endif
 
-// ===== RENDU =====
-const fmt = n => new Intl.NumberFormat("fr-FR").format(n).replace(/[\u202f\u00a0]/g, " ");
-const $ = id => document.getElementById(id);
+{{-- ===== SIGNATURE ===== --}}
+<div class="signature">LA DIRECTION</div>
 
-$("societe-nom").textContent = facture.societe.nom;
-$("societe-adresse").textContent = facture.societe.adresse;
-$("societe-tel").textContent = facture.societe.tel;
-$("societe-email").textContent = facture.societe.email;
-$("client").textContent = facture.client;
-$("date").textContent = facture.date;
-$("devise").textContent = facture.devise;
-
-let total = 0;
-$("lignes").innerHTML = facture.lignes.map((l, i) => {
-  const t = l.qte * l.pu; total += t;
-  return `<tr>
-    <td>${i + 1}</td>
-    <td>${l.designation}</td>
-    <td class="text-center">${l.qte}</td>
-    <td class="text-end">${fmt(l.pu)}</td>
-    <td class="text-end">${fmt(t)}</td>
-  </tr>`;
-}).join("");
-$("total").textContent = fmt(total);
-$("total-lettres").textContent = facture.totalLettres;
-</script> --}}
 </body>
 </html>
